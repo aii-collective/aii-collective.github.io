@@ -1,0 +1,6 @@
+# Installed by claude-shared setup.sh
+mode=submodule
+commit=36b9aef63765288111ad89f4ea2198f39e618578
+commit_short=36b9aef
+date=2026-04-13T04:03:51Z
+source=git@github-aiico:aii-collective/claude-shared.git

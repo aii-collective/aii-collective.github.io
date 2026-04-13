@@ -1,0 +1,1 @@
+../shared/hooks/require-commit-doc.sh
