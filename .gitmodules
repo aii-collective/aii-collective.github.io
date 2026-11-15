@@ -1,3 +1,0 @@
-[submodule ".claude/shared"]
-	path = .claude/shared
-	url = git@github-aiico:aii-collective/claude-shared.git
