@@ -1,1 +1,0 @@
-../shared/hooks/update-design-doc.sh
