@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AII Collective · Beijing Academy of AI</title>
+<style>
+  :root {
+    --ink: #0F1115; --ink-2: #41464E; --ink-3: #61666B; --ink-4: #81858C;
+    --canvas: #FFFFFF; --line-soft: rgba(0, 0, 0, 0.07); --blue: #4176E6; --blue-soft: #EDF3FE;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; min-height: 100%; }
+  body {
+    background: var(--canvas); color: var(--ink); font-family: var(--sans);
+    display: grid; place-items: center; padding: 56px 24px; -webkit-font-smoothing: antialiased;
+  }
+  main { width: 100%; max-width: 720px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--ink-3); }
+  .brand .mark { width: 9px; height: 9px; background: var(--blue); border-radius: 2px; }
+  .brand b { letter-spacing: 0.18em; color: var(--ink); font-weight: 600; }
+  .kicker { margin-top: 44px; font-size: 13px; letter-spacing: 0.12em; color: var(--blue); font-weight: 600; }
+  h1 { margin: 12px 0 0; font-size: 44px; line-height: 1.2; font-weight: 600; letter-spacing: -0.01em; }
+  p { margin: 20px 0 0; font-size: 17px; line-height: 1.7; color: var(--ink-2); }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+  .btn {
+    display: inline-block; padding: 12px 18px; font-size: 15px; font-weight: 600;
+    text-decoration: none; color: var(--ink); border: 1px solid var(--ink);
+  }
+  .btn.primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .btn:hover, .btn:focus-visible { background: var(--blue-soft); border-color: var(--blue); color: var(--ink); outline: none; }
+  .btn.primary:hover, .btn.primary:focus-visible { background: #2f62cf; border-color: #2f62cf; color: #fff; }
+  .note { margin-top: 36px; padding-top: 16px; border-top: 1px solid var(--line-soft); font-size: 13px; line-height: 1.7; color: var(--ink-4); }
+  @media (max-width: 720px) { h1 { font-size: 32px; } }
+</style>
+</head>
+<body>
+<main>
+  <div class="brand"><span class="mark"></span><b>AII</b><span>AII Collective</span></div>
+  <p class="kicker">BEIJING ACADEMY OF AI · NOVEMBER 2026</p>
+  <h1>The English edition is in preparation.</h1>
+  <p>This briefing covers the main product OSq, the research line Portal, and the road that led here. The Chinese edition is complete and available now.</p>
+  <div class="actions">
+    <a class="btn primary" href="deck-web.html">Open the Chinese deck</a>
+    <a class="btn" href="../index.html">Back to language choice</a>
+  </div>
+  <p class="note">For an English walkthrough or a PDF copy, reply to the message that shared this link.</p>
+</main>
+</body>
+</html>

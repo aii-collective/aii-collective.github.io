@@ -1,0 +1,929 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>智人合作社 · 北京智源交流</title>
+<meta name="author" content="AII · Andy Wong" />
+<style>
+  :root {
+    --ink: #0F1115;
+    --ink-2: #41464E;
+    --ink-3: #61666B;
+    --ink-4: #81858C;
+    --canvas: #FFFFFF;
+    --surface: #F7F8FA;
+    --line: rgba(0, 0, 0, 0.12);
+    --line-soft: rgba(0, 0, 0, 0.07);
+    --blue: #4176E6;
+    --blue-soft: #EDF3FE;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+      "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", "Source Han Sans SC", sans-serif;
+    --mono: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, Menlo, monospace;
+  }
+
+  * { box-sizing: border-box; }
+  .nw { white-space: nowrap; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+
+  body {
+    background: #E7E9EE;
+    color: var(--ink);
+    font-family: var(--sans);
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .stage {
+    width: 1280px;
+    height: 720px;
+    position: relative;
+    background: var(--canvas);
+    box-shadow: 0 8px 30px rgba(15, 17, 21, 0.12);
+    transform-origin: center center;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    padding: 50px 80px 46px;
+    background: var(--canvas);
+    display: none;
+    flex-direction: column;
+  }
+  .slide.active { display: flex; }
+
+  .shead { display: flex; justify-content: space-between; align-items: baseline; gap: 24px; }
+  .sec { font-size: 13px; letter-spacing: 0.12em; color: var(--blue); font-weight: 600; }
+  .run { font-size: 12px; color: var(--ink-4); letter-spacing: 0.04em; }
+
+  main { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+
+  h1 { margin: 0; font-size: 84px; line-height: 1.14; font-weight: 600; letter-spacing: 0; }
+  h2 {
+    margin: 16px 0 0;
+    font-size: 40px;
+    line-height: 1.3;
+    font-weight: 600;
+    max-width: 1080px;
+  }
+  p { margin: 0; }
+  .deck { font-size: 20px; line-height: 1.7; color: var(--ink-3); margin: 14px 0 0; max-width: 880px; }
+  .small { font-size: 16px; line-height: 1.65; color: var(--ink-3); }
+  .tiny { font-size: 14px; line-height: 1.55; color: var(--ink-4); }
+  .blue { color: var(--blue); }
+  strong, b { font-weight: 600; }
+
+  .foot {
+    position: absolute;
+    left: 80px;
+    right: 80px;
+    bottom: 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 24px;
+    padding-top: 8px;
+    border-top: 1px solid var(--line-soft);
+    font-size: 12px;
+    color: var(--ink-4);
+    letter-spacing: 0.03em;
+  }
+  .foot .pg { font-family: var(--mono); font-size: 11px; }
+
+  /* ---------- title ---------- */
+  .title-slide { justify-content: center; padding-left: 96px; overflow: hidden; }
+  .title-slide .kicker { font-size: 15px; letter-spacing: 0.12em; color: var(--blue); font-weight: 600; }
+  .title-slide .sub { margin: 18px 0 0; font-size: 33px; line-height: 1.5; color: var(--ink-3); max-width: 640px; }
+  .title-slide .meta { margin-top: 32px; font-size: 16px; color: var(--ink-4); line-height: 1.75; }
+  .motif { position: absolute; right: 66px; top: 190px; width: 396px; }
+
+  /* ---------- generic ---------- */
+  .band {
+    margin-top: 16px;
+    padding: 13px 22px;
+    border-left: 3px solid var(--blue);
+    background: var(--blue-soft);
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--ink);
+  }
+
+  .row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; margin-top: 24px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 52px; margin-top: 18px; }
+
+  .stat .num { font-size: 52px; line-height: 1.05; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+  .stat .num small { font-size: 23px; font-weight: 500; letter-spacing: 0; }
+  .stat .lab { margin-top: 8px; font-size: 17px; line-height: 1.55; color: var(--ink-2); }
+  .src { margin-top: 8px; font-size: 13px; line-height: 1.5; color: var(--ink-4); }
+
+  .ev { border-top: 2px solid var(--ink); padding-top: 14px; }
+  .ev .cap { font-size: 13px; letter-spacing: 0.1em; color: var(--ink-4); font-weight: 600; }
+  .ev h3 { margin: 8px 0 0; font-size: 25px; line-height: 1.35; font-weight: 600; }
+  .ev p { margin: 9px 0 0; font-size: 16.5px; line-height: 1.62; color: var(--ink-2); }
+  .ev .metric { margin: 8px 0 0; font-family: var(--mono); font-size: 29px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  .mini4 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 28px; }
+  .mini .n { font-size: 34px; line-height: 1.1; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+  .mini .l { margin-top: 3px; font-size: 14px; line-height: 1.45; color: var(--ink-3); }
+
+  /* ---------- flow ---------- */
+  .flow { display: grid; grid-template-columns: 1fr 30px 1fr 30px 1fr; align-items: stretch; margin-top: 38px; padding-bottom: 6px; }
+  .flow .box { border-top: 1.5px solid var(--ink); padding-top: 12px; padding-right: 10px; }
+  .flow .box .t { font-size: 18px; font-weight: 600; }
+  .flow .box .d { margin-top: 5px; font-size: 14px; line-height: 1.5; color: var(--ink-3); }
+  .flow .arrow { display: grid; place-items: center; color: var(--blue); font-size: 18px; padding-top: 18px; }
+
+  .barfig { height: 204px; border: 1px solid var(--line); border-radius: 3px; background: var(--surface); padding: 14px 16px; display: flex; flex-direction: column; justify-content: center; }
+  .barfig-title { font-size: 12.5px; line-height: 1.4; color: var(--ink-3); margin-bottom: 12px; }
+  .brow { display: grid; grid-template-columns: 76px 1fr 40px; gap: 8px; align-items: center; padding: 5px 0; }
+  .brow .bn { font-size: 12.5px; color: var(--ink-3); white-space: nowrap; }
+  .brow .bt { position: relative; height: 14px; background: rgba(0, 0, 0, 0.06); }
+  .brow .bt i { position: absolute; left: 0; top: 0; bottom: 0; display: block; background: var(--ink-4); }
+  .brow .bt::after { content: ""; position: absolute; left: 50%; top: -3px; bottom: -3px; border-left: 1px dashed var(--ink-4); opacity: 0.6; }
+  .brow.hi .bt i { background: var(--blue); }
+  .brow.hi .bn, .brow.hi .bv { color: var(--ink); font-weight: 600; }
+  .brow .bv { font-family: var(--mono); font-size: 12.5px; text-align: right; }
+  .barfig-note { margin-top: 10px; font-size: 12px; line-height: 1.4; color: var(--ink-4); }
+
+  /* ---------- shots ---------- */
+  .shots { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-top: 22px; align-items: start; }
+  .shots figure { margin: 0; }
+  .shots img { display: block; width: 100%; height: 204px; object-fit: cover; border: 1px solid var(--line); border-radius: 3px; }
+  .shots img.fit { object-fit: contain; background: var(--surface); }
+  .shots figcaption { margin-top: 7px; font-size: 13px; line-height: 1.45; color: var(--ink-4); }
+
+  .shot-pair { display: grid; gap: 12px; }
+  .shot-pair img { display: block; width: 100%; border: 1px solid var(--line); border-radius: 3px; }
+
+  /* ---------- stack ---------- */
+  .stack { margin-top: 20px; border-top: 2px solid var(--ink); }
+  .layer { display: grid; grid-template-columns: 90px 1fr 152px; gap: 20px; align-items: baseline; padding: 14px 0; border-bottom: 1px solid var(--line-soft); }
+  .layer .side { font-size: 13px; letter-spacing: 0.1em; color: var(--ink-4); font-weight: 600; }
+  .layer .body { font-size: 17px; line-height: 1.55; color: var(--ink-2); }
+  .layer .body b { color: var(--ink); }
+  .layer .note { font-size: 13px; line-height: 1.45; color: var(--ink-4); text-align: right; }
+  .layer.ours { background: var(--blue-soft); border-left: 3px solid var(--blue); padding-left: 17px; margin-left: -20px; padding-right: 0; grid-template-columns: 90px 1fr 152px; }
+  .layer.ours .side { color: var(--blue); }
+
+  .map3 { margin-top: 18px; }
+  .map3 .r { display: grid; grid-template-columns: 72px 1fr; gap: 18px; padding: 8px 0; border-bottom: 1px solid var(--line-soft); }
+  .map3 .r b { font-size: 15px; }
+  .map3 .r span { font-size: 14.5px; line-height: 1.5; color: var(--ink-3); }
+
+  /* ---------- matrix ---------- */
+  table.matrix { width: 100%; border-collapse: collapse; margin-top: 20px; }
+  table.matrix th {
+    text-align: left; font-size: 12px; letter-spacing: 0.1em; color: var(--ink-4);
+    font-weight: 600; padding: 0 14px 9px 0; border-bottom: 1px solid var(--line);
+  }
+  table.matrix td {
+    font-size: 16px; line-height: 1.55; color: var(--ink-2);
+    padding: 12px 14px 12px 0; border-bottom: 1px solid var(--line-soft); vertical-align: top;
+  }
+  table.matrix td:first-child { font-weight: 600; color: var(--ink); width: 140px; }
+  table.matrix td .tag { display: inline-block; font-size: 12px; color: var(--blue); letter-spacing: 0.06em; }
+
+  /* Months from Aug 2015 to mid-Nov 2026, with Oct 2023 as the Ping An pivot. */
+  .career-track { position: relative; margin-top: 62px; }
+  .career-scale {
+    position: relative; display: grid; grid-template-columns: 67fr 31fr 12fr 16fr 5fr 4.5fr;
+    margin: 0; padding: 0; height: 38px;
+    list-style: none; border-radius: 3px; overflow: hidden;
+  }
+  .career-scale li { display: grid; place-items: center; color: white; font-size: 13px; font-weight: 700; text-align: center; }
+  .career-scale li + li { border-left: 2px solid white; }
+  .career-scale li { background: var(--stage-color); }
+  [data-career-stage="1"] { --stage-color: #2f63c2; }
+  [data-career-stage="2"] { --stage-color: #326e78; }
+  [data-career-stage="3"] { --stage-color: #94511c; }
+  [data-career-stage="4"] { --stage-color: #684e9c; }
+  [data-career-stage="5"] { --stage-color: #187563; }
+  [data-career-stage="6"] { --stage-color: #a24361; }
+  [data-career-stage="7"] { --stage-color: #485872; }
+  .career-scale .short-period { font-size: 11px; line-height: 1.05; white-space: nowrap; }
+  .career-side { position: absolute; right: 7%; bottom: calc(100% + 8px); color: var(--stage-color); font-size: 13px; }
+  .career-connectors { display: block; width: 100%; height: 82px; }
+  .career-connectors path { fill: none; stroke: var(--stage-color); stroke-width: 1.5; }
+  .career-connectors rect { fill: var(--stage-color); }
+  .career { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+  .career li {
+    min-width: 0; padding: 10px 6px 12px; border: 1px solid color-mix(in srgb, var(--stage-color) 28%, white);
+    border-top: 3px solid var(--stage-color); border-radius: 4px;
+    background: color-mix(in srgb, var(--stage-color) 8%, white);
+  }
+  .career strong { display: block; min-height: 48px; margin-top: 8px; font-size: 14px; line-height: 1.35; }
+  .career p { font-size: 16px; line-height: 1.5; color: var(--ink-2); }
+  .career a { color: var(--stage-color); }
+
+  /* ---------- timeline ---------- */
+  .timeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin-top: 22px; border-top: 1px solid var(--line); padding-top: 0; }
+  .tl { position: relative; padding: 18px 18px 0 0; }
+  .tl::before { content: ""; position: absolute; top: -4px; left: 0; width: 7px; height: 7px; background: var(--blue); border-radius: 50%; }
+  .tl .when { font-family: var(--mono); font-size: 12px; color: var(--blue); letter-spacing: 0.04em; }
+  .tl .what { margin-top: 5px; font-size: 16px; line-height: 1.5; font-weight: 600; }
+  .tl .why { margin-top: 4px; font-size: 13px; line-height: 1.5; color: var(--ink-4); }
+
+  /* ---------- ask ---------- */
+  .ask { display: grid; grid-template-columns: 1.25fr 1fr; gap: 54px; margin-top: 20px; }
+  .ask h3 { margin: 0 0 12px; font-size: 14px; letter-spacing: 0.1em; color: var(--ink-4); font-weight: 600; }
+  .ask ol { margin: 0; padding-left: 22px; }
+  .ask ol li { font-size: 17px; line-height: 1.6; margin-bottom: 12px; color: var(--ink-2); }
+  .ask ol li::marker { color: var(--blue); font-family: var(--mono); font-size: 14px; }
+  .ask ul { margin: 0; padding-left: 18px; }
+  .ask ul li { font-size: 16px; line-height: 1.6; margin-bottom: 10px; color: var(--ink-2); }
+  .ask ul li::marker { color: var(--blue); }
+  .ask ol li b, .ask ul li b { color: var(--ink); font-weight: 600; }
+
+  /* ---------- notes ---------- */
+  .notes {
+    display: none;
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    max-height: 40%;
+    overflow: auto;
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+    padding: 16px 80px 18px;
+    font-size: 16px; line-height: 1.7; color: var(--ink-2);
+    z-index: 4;
+  }
+  .notes b { color: var(--ink); }
+  body.show-notes .slide.active .notes:not(:empty) { display: block; }
+
+  .hint {
+    position: fixed; right: 18px; bottom: 14px;
+    font-size: 11px; color: var(--ink-4); letter-spacing: 0.06em; z-index: 6;
+  }
+
+  @page { size: 13.333in 7.5in; margin: 0; }
+  @media print {
+    body { display: block; background: #fff; overflow: visible; }
+    .stage { width: auto; height: auto; transform: none !important; box-shadow: none; }
+    .slide { display: flex !important; position: relative; width: 13.333in; height: 7.5in; page-break-after: always; break-after: page; }
+    .slide:last-child { page-break-after: auto; }
+    .notes, .hint { display: none !important; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+
+  .circuits { display: grid; gap: 10px; }
+  .circuit h3 { margin: 0 0 6px; font-size: 22px; }
+  .circuit-symbol { display: inline-block; width: .66em; height: .66em; margin-right: .28em; vertical-align: .02em; border: 2px solid var(--blue); border-radius: 50%; }
+  .circuit-symbol.institution { border-color: #238875; border-radius: 0; }
+  .circuit-steps { display: grid; grid-template: repeat(2, minmax(55px, auto)) / repeat(2, minmax(0, 1fr)); gap: 18px 28px; margin: 0; padding: 0; list-style: none; }
+  .circuit-steps li { position: relative; padding: 4px 12px; border: 1px solid var(--line); background: var(--surface); }
+  .circuit-steps li:nth-child(3) { grid-area: 2 / 2; }
+  .circuit-steps li:nth-child(4) { grid-area: 2 / 1; }
+  .circuit-steps li::after { position: absolute; width: 28px; height: 28px; line-height: 28px; text-align: center; color: var(--blue); font-size: 23px; font-weight: 600; }
+  .circuit-steps li:nth-child(1)::after { content: "→"; left: 100%; top: calc(50% - 14px); }
+  .circuit-steps li:nth-child(2)::after { content: "↓"; left: calc(50% - 14px); top: calc(100% - 5px); }
+  .circuit-steps li:nth-child(3)::after { content: "←"; right: 100%; top: calc(50% - 14px); }
+  .circuit-steps li:nth-child(4)::after { content: "↑"; left: calc(50% - 14px); bottom: calc(100% - 5px); }
+  .circuit-steps strong { display: block; font-size: 21px; line-height: 1.25; }
+  .circuit-steps span { display: block; margin-top: 3px; color: var(--ink-3); font-size: 17px; line-height: 1.4; }
+  .circuit .return { margin: 6px 0 0; color: var(--blue); font-size: 16px; }
+  .circuit-case { padding: 14px 24px; }
+  .circuit-case h3 { margin-top: 0; font-size: 24px; }
+  .circuit-case figure { margin: 10px 0 8px; }
+  .circuit-case img { display: block; width: 100%; height: auto; border: 1px solid var(--line); }
+  .diagram-open { display: block; cursor: zoom-in; }
+  .diagram-viewer { width: min(94vw, 1280px); max-height: 92vh; padding: 0; border: 0; border-radius: 10px; color: var(--ink); background: var(--canvas); }
+  .diagram-viewer[open] { display: flex; flex-direction: column; }
+  .diagram-viewer::backdrop { background: rgb(15 17 21 / 75%); }
+  .diagram-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+  .diagram-toolbar strong { margin-right: auto; }
+  .diagram-toolbar button { padding: 6px 10px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); color: inherit; font: inherit; cursor: pointer; }
+  .diagram-toolbar button:disabled { opacity: 0.4; cursor: default; }
+  .diagram-explanation { position: relative; z-index: 1; margin: 0; padding: 12px 16px; border-bottom: 1px solid var(--line); font-size: 17px; line-height: 1.6; }
+  .diagram-term { color: #214c9e; font-weight: 600; text-decoration: underline dotted; text-underline-offset: 3px; cursor: help; }
+  .diagram-tooltip { display: none; position: absolute; top: 100%; left: 16px; right: 16px; width: fit-content; max-width: 560px; padding: 9px 12px; border-radius: 4px; background: var(--ink); color: white; font-size: 15px; font-weight: 400; text-decoration: none; }
+  .diagram-term:is(:hover, :focus) + .diagram-tooltip { display: block; }
+  .diagram-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 30%); min-height: 0; }
+  .diagram-viewer:is([data-content="fog"], [data-content="projects"]) .diagram-body { grid-template-columns: minmax(0, 1fr); }
+  .diagram-viewer:is([data-content="fog"], [data-content="projects"]) :is(.diagram-explanation, .diagram-loop, .diagram-hotspot) { display: none; }
+  .diagram-viewer:is([data-content="fog"], [data-content="projects"]) .diagram-scroll { max-height: none; }
+  .fog-explanation { display: none; margin: 0; padding: 12px 16px; border-bottom: 1px solid var(--line); font-size: 17px; }
+  .diagram-viewer[data-content="fog"] .fog-explanation { display: block; }
+  .diagram-scroll { min-height: 0; overflow: auto; }
+  .diagram-loop { overflow: auto; padding: 14px 16px; border-left: 1px solid var(--line); background: var(--blue-soft); }
+  .diagram-loop .circuit-steps span { font-size: 14px; }
+  .diagram-loop .circuit-steps strong { font-size: 18px; }
+  .diagram-loop > p { margin: 8px 0 0; font-size: 15px; line-height: 1.5; }
+  @media (max-width: 720px) {
+    .diagram-body { grid-template-columns: 1fr; overflow: auto; }
+    .diagram-scroll { max-height: 40vh; }
+    .diagram-loop { overflow: visible; border-left: 0; border-top: 1px solid var(--line); }
+  }
+  .diagram-image { position: relative; width: var(--diagram-zoom, 100%); margin: 0 auto; }
+  .diagram-image img { display: block; width: 100%; height: auto; }
+  .diagram-hotspot { position: absolute; padding: 0; border: 2px solid #2861cd; border-radius: 5px; background: rgb(65 118 230 / 7%); cursor: help; }
+  .diagram-hotspot.trigger { left: 3.7%; top: 12.9%; width: 16.9%; height: 20.3%; }
+  .diagram-hotspot.sessions { left: 30.9%; top: 73%; width: 43.5%; height: 18.3%; }
+  .diagram-hotspot:is(:hover, :focus) { z-index: 1; background: rgb(65 118 230 / 16%); }
+  .diagram-node-tip { display: none; position: absolute; width: min(270px, 77vw); padding: 9px 12px; border-radius: 4px; background: var(--ink); color: white; font: 15px/1.5 var(--sans); text-align: left; pointer-events: none; }
+  .diagram-hotspot:is(:hover, :focus) .diagram-node-tip { display: block; }
+  .trigger .diagram-node-tip { top: 100%; left: 0; }
+  .sessions .diagram-node-tip { bottom: 100%; left: 50%; transform: translateX(-50%); }
+
+  .portal-intro { margin: 14px 0 0; font-size: 22px; line-height: 1.5; color: var(--ink-2); }
+  .bench-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 20px; margin-top: 22px; }
+  .bench-grid > div { padding: 13px 16px; border-left: 3px solid var(--blue); background: var(--surface); }
+  .bench-grid h3 { margin: 0 0 5px; font-size: 22px; }
+  .bench-grid p, .bench-list { font-size: 18px; line-height: 1.5; color: var(--ink-2); }
+  .bench-list { display: grid; grid-template-columns: 1.45fr 1fr 1fr; gap: 22px; padding: 0; margin: 0; list-style: none; }
+  .bench-list strong { display: block; margin-bottom: 4px; color: var(--ink); }
+  .paper-rows { margin-top: 14px; border-top: 1px solid var(--line); }
+  .paper-head { display: grid; grid-template-columns: 140px 1.2fr 150px 1.2fr; gap: 16px; padding: 6px 0; font-size: 11px; letter-spacing: 0.06em; color: var(--ink-4); border-bottom: 1px solid var(--line); }
+  .paper-row { display: grid; grid-template-columns: 140px 1.2fr 150px 1.2fr; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--line-soft); font-size: 15px; line-height: 1.5; color: var(--ink-2); align-items: start; }
+  .paper-row > b { font-family: var(--mono); font-size: 11px; letter-spacing: 0.03em; color: var(--blue); padding-top: 2px; }
+  .paper-row span b { font-weight: 600; }
+  .paper-row span { min-width: 0; }
+  .paper-row .scale { font-size: 13px; line-height: 1.5; color: var(--ink-4); text-align: right; }
+  .paper-note { margin: 10px 0 0; font-size: 13px; line-height: 1.6; color: var(--ink-4); }
+  .paper-intro { margin: 12px 0 0; font-size: 16px; line-height: 1.6; color: var(--ink-2); }
+  .paper-cite { display: inline-block; margin-top: 8px; color: var(--blue); font-size: 15px; line-height: 1.5; }
+  .tip { position: relative; color: #214c9e; font-weight: 600; text-decoration: underline dotted; text-underline-offset: 3px; cursor: help; outline: none; }
+  .tip .tip-box { display: none; position: absolute; bottom: calc(100% + 10px); left: 0; width: 340px; padding: 9px 12px; border-radius: 4px; background: var(--ink); color: #fff; font-size: 14px; font-weight: 400; line-height: 1.55; text-align: left; z-index: 30; }
+  .tip.left .tip-box { left: auto; right: 0; }
+  .tip.below .tip-box { top: calc(100% + 10px); bottom: auto; }
+  .tip:is(:hover, :focus) .tip-box { display: block; }
+  @media print { .tip .tip-box { display: none !important; } }
+
+  .portal-media { display: grid; grid-template-columns: 1.25fr 1fr 1fr; gap: 18px; margin-top: 20px; }
+  .portal-media figure { min-width: 0; margin: 0; }
+  .portal-media figcaption { margin: 0 0 8px; font-size: 18px; font-weight: 600; }
+  .portal-media img, .portal-media video { display: block; width: 100%; height: 250px; object-fit: contain; background: #111625; border-radius: 6px; }
+  .portal-media img { background: var(--surface); border: 1px solid var(--line); }
+
+
+  .loop-layout { display: grid; grid-template-columns: 1.12fr 1fr; gap: 36px; margin-top: 16px; }
+  .loop-layout .circuit-steps span { font-size: 16px; }
+  .loop-layout .circuit-steps { gap: 15px 28px; }
+  .case-card { border: 1px solid var(--line); background: var(--surface); }
+  .case-card p, .case-card figcaption { font-size: 17px; line-height: 1.6; }
+  .case-card figcaption { margin-top: 8px; }
+  .foot { justify-content: flex-end; }
+  .main-copy { margin: 14px 0 0; color: var(--ink-2); font-size: 23px; line-height: 1.6; max-width: 920px; }
+  .ev p { font-size: 20px; }
+  .research-flow { margin-top: 28px; }
+  .research-flow h3 { margin-bottom: 17px; }
+  .flow-card { padding: 12px; text-align: center; background: var(--surface); border: 1px solid var(--line); }
+  .flow-card strong { display: block; font-size: 20px; }
+  .flow-card span { display: block; margin-top: 4px; font-size: 17px; line-height: 1.5; color: var(--ink-2); }
+  .flow-start { background: var(--blue-soft); border-color: transparent; }
+  .flow-arrow { display: block; text-align: center; color: var(--blue); font-size: 22px; line-height: 1.2; }
+  .flow-lessons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .flow-stages { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; margin: 0; padding: 0; list-style: none; }
+  .flow-stages li { position: relative; padding: 13px 0; }
+  .flow-stages li + li::before { content: "→"; position: absolute; left: -19px; color: var(--blue); }
+  .flow-feedback { margin-top: 8px; }
+  .flow-feedback > strong { display: block; margin: 8px 0; text-align: center; font-size: 18px; color: #2453B3; }
+  .milestone-layout { gap: 34px; margin-top: 24px; }
+  .milestone-layout .ev h3 { margin-top: 0; font-size: 23px; }
+  .milestone-layout .ev p { font-size: 18px; line-height: 1.5; }
+  .milestone-steps { display: grid; gap: 12px; margin: 12px 0 0; padding: 0; list-style: none; }
+  .milestone-steps li { padding: 10px 14px; background: var(--surface); border-left: 3px solid var(--blue); }
+  .milestone-steps strong { font-size: 20px; }
+  .milestone-layout .milestone-steps p { margin-top: 3px; }
+  .center-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
+  .center-metrics div { padding: 6px 10px; background: var(--blue-soft); font-size: 15px; }
+  .center-metrics strong { display: block; color: #2453B3; font-size: 25px; }
+  .center-projects { margin: 10px 0 0; }
+  .center-projects img { display: block; width: 100%; max-height: 221px; object-fit: contain; object-position: left; }
+  .center-projects figcaption { margin-top: 5px; font-size: 13px; color: var(--ink-3); }
+  .row3 { margin-top: 34px; }
+  .band { margin-top: 24px; font-size: 20px; }
+  .thesis-questions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 32px; margin-top: 18px; }
+  .thesis-questions > strong { grid-column: 1 / -1; }
+  .thesis-questions p { font-size: 17px; color: var(--ink-2); }
+  .thesis-columns { margin-top: 22px; gap: 32px; }
+  .thesis-columns .ev { padding-top: 8px; }
+  .thesis-columns .ev h3 { margin-top: 0; font-size: 22px; }
+  .thesis-columns .ev p, .thesis-list { font-size: 17px; line-height: 1.5; color: var(--ink-2); }
+  .thesis-columns h4 { margin: 10px 0 4px; font-size: 16px; }
+  .thesis-list { margin: 4px 0 0; padding-left: 22px; }
+  .thesis-list li + li { margin-top: 3px; }
+  .thesis-columns .demo-links { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 16px; }
+  .thesis-belief { margin-top: 16px; font-size: 17px; }
+  .thesis-columns .funding-amount { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; color: var(--ink-3); }
+  .funding-amount strong { color: #2453B3; font-size: 32px; font-variant-numeric: tabular-nums; }
+  .thesis-columns .funding-source { margin-top: 13px; font-size: 14px; color: var(--ink-3); }
+  .thesis-notes p + p { margin-top: 8px; }
+  .diagram-viewer { margin: auto; }
+  #demo-viewer video { display: block; width: 100%; max-height: 80vh; background: #111625; }
+  @media print {
+    .diagram-viewer, .portal-media video { display: none !important; }
+    .portal-media .portal-print { display: block !important; }
+  }
+  .portal-print { display: none !important; }
+  .portal-media .portal-print { border: 0; background: #111625; }
+</style>
+</head>
+
+<body>
+
+<div class="stage">
+
+<section class="slide title-slide">
+  <svg class="motif" viewBox="0 0 420 400" role="img" aria-label="OSq 的两条相扣回路：圆形 O 代表个人，方形 sq 代表机构">
+    <defs>
+      <mask id="cover-blue-under" maskUnits="userSpaceOnUse" x="0" y="0" width="420" height="400">
+        <rect width="420" height="400" fill="white" />
+        <path d="M150 232v36" stroke="black" stroke-width="22" />
+      </mask>
+      <mask id="cover-green-under" maskUnits="userSpaceOnUse" x="0" y="0" width="420" height="400">
+        <rect width="420" height="400" fill="white" />
+        <path d="M249 112v36" stroke="black" stroke-width="22" />
+      </mask>
+    </defs>
+    <g fill="var(--blue)" mask="url(#cover-blue-under)">
+      <circle cx="145" cy="145" r="105" fill="none" stroke="var(--blue)" stroke-width="5" />
+      <circle cx="71" cy="71" r="10" />
+      <circle cx="219" cy="71" r="10" />
+      <circle cx="219" cy="219" r="10" />
+      <circle cx="71" cy="219" r="10" />
+    </g>
+    <g fill="#238875" mask="url(#cover-green-under)">
+      <path d="M150 130H360V340H150Z" fill="none" stroke="#238875" stroke-width="5" />
+      <circle cx="150" cy="130" r="10" />
+      <circle cx="360" cy="130" r="10" />
+      <circle cx="360" cy="340" r="10" />
+      <circle cx="150" cy="340" r="10" />
+    </g>
+  </svg>
+  <h1 style="font-size:72px">智人合作社</h1>
+  <p class="sub" style="font-size:28px">拓展人与 AI 协作的边界，共同解决更难的问题。</p>
+  <p class="meta">黄家英（Andy）&nbsp;&nbsp;2026年11月15日</p>
+  <aside class="notes"></aside>
+</section>
+
+<section class="slide">
+  <header class="shead"><div class="sec">自我介绍</div></header>
+  <main>
+    <h2>从空间数据应用研究到大模型数据飞轮</h2>
+    <div class="career-track">
+      <ol class="career-scale" aria-label="职业时间轴">
+        <li data-career-stage="1">2015.08–2021.03</li>
+        <li data-career-stage="2">2021.03–2023.10</li>
+        <li data-career-stage="3">2023.10–2024.10</li>
+        <li data-career-stage="4">2024.10–2026.01</li>
+        <li class="short-period" data-career-stage="6"><span>2026.02<br>–年中</span></li>
+        <li class="short-period" data-career-stage="7"><span>2026<br>年中<br>至今</span></li>
+      </ol>
+      <p class="career-side" data-career-stage="5">Trios · 2025.12–2026.01（并行）</p>
+      <svg class="career-connectors" viewBox="0 0 1120 82" aria-hidden="true">
+        <rect data-career-stage="5" x="1025" y="10" width="16.5" height="5" rx="1" />
+        <path data-career-stage="1" d="M277 0V18L75 70V82" />
+        <path data-career-stage="2" d="M682 0V18L237 70V82" />
+        <path data-career-stage="3" d="M860 0V18L398 70V82" />
+        <path data-career-stage="4" d="M975 0V18L560 70V82" />
+        <path data-career-stage="5" d="M1033 15V18L722 70V82" />
+        <path data-career-stage="6" d="M1062 0V18L883 70V82" />
+        <path data-career-stage="7" d="M1101 0V18L1045 70V82" />
+      </svg>
+    </div>
+    <ol class="career">
+      <li data-career-stage="1"><strong>加州大学戴维斯分校<br>水文科学博士</strong><p>用卫星和无人机遥感数据建模，支持<a href="https://doi.org/10.1029/2020WR028876" target="_blank" rel="noopener">水资源管理</a>和水质评估。</p></li>
+      <li data-career-stage="2"><strong>平安研究院（硅谷）<br>遥感应用团队</strong><p>把卫星数据和机器学习用于农业保险核验与<a href="https://ai-2-ase.github.io/papers/5%5CSubmission%5CAAAI_2023_Workshop_CR-2b.pdf" target="_blank" rel="noopener">森林碳监测</a>。</p></li>
+      <li data-career-stage="3"><strong>平安研究院（硅谷）<br>转向大模型</strong><p>研究金融长文档问答，构建 <a href="https://aclanthology.org/2025.emnlp-main.615/" target="_blank" rel="noopener">LongFinanceQA</a> 数据集。</p></li>
+      <li data-career-stage="4"><strong>Inflection AI<br>情商数据飞轮</strong><p>将产品反馈用于情商（EQ）评测和后训练。</p></li>
+      <li data-career-stage="5"><strong>Trios<br>业余原型</strong><p>为服务行业开发智能体，用人工反馈持续改进。</p></li>
+      <li data-career-stage="6"><strong>Inflection AI<br>智能体</strong><p>探索智能体基准与提示词、技能优化框架。</p></li>
+      <li data-career-stage="7"><strong>Taste Labs<br>评测和小模型</strong><p>面向网页等视觉设计任务，开展评测、数据采集与小型裁判模型研发。</p></li>
+    </ol>
+  </main>
+  <footer class="foot"><span class="pg">02</span></footer>
+  <aside class="notes"></aside>
+</section>
+
+<section class="slide">
+  <header class="shead"><div class="sec">核心逻辑</div></header>
+  <main>
+    <h2>让专业判断在真实工作中积累</h2>
+    <div class="band thesis-questions">
+      <strong>递归自我改进（RSI）的两个瓶颈</strong>
+      <p><strong>任务</strong>　选择值得解决的问题，明确边界，并组织成可推进的任务。</p>
+      <p><strong>判断</strong>　定义什么算解决、需要什么证据，再根据结果作出判断。</p>
+    </div>
+    <div class="row2 thesis-columns">
+      <div class="ev">
+        <h3>Trios · 服务行业智能体治理原型</h3>
+        <p>系统把高风险或超出规则的情况交给专家，并记录专家的纠正和规则调整，用于持续改进。</p>
+        <h4>两种失败情景</h4>
+        <ol class="thesis-list">
+          <li><strong>采用缓慢。</strong> 企业导入周期长，个人也不愿额外花时间教 AI。</li>
+          <li><strong>基座模型开箱即能服务个人。</strong> Trios 的空间会缩小。企业能否凭各自的规则和判断标准形成可持续的差异，仍待验证。</li>
+        </ol>
+      </div>
+      <div class="ev">
+        <h3>融资交流</h3>
+        <p class="funding-amount"><strong>325 万美元</strong>口头投资意向</p>
+        <p>OVO Fund 75 万美元 · Streamlined 250 万美元</p>
+        <h4>曾与以下机构面谈</h4>
+        <p>Sutter Hill Ventures、Foundation Capital、8VC、Costanoa Ventures</p>
+      </div>
+    </div>
+  </main>
+  <footer class="foot"><span class="pg">03</span></footer>
+  <aside class="notes thesis-notes"></aside>
+</section>
+
+<section class="slide">
+  <header class="shead"><div class="sec">核心逻辑</div></header>
+  <main>
+    <h2>把设计判断转化为 AI 可用的反馈</h2>
+    <div class="row2 thesis-columns">
+      <div class="ev">
+        <h3>Taste Labs · 从视觉设计切入</h3>
+        <ul class="thesis-list">
+          <li>视觉品味的标准和趋势会持续变化。</li>
+          <li>即使都用 AI，设计师与普通用户的判断差距仍会存在。</li>
+        </ul>
+        <p>为前沿模型团队采集和交付数据，以项目收入支持长期研究。专业反馈可转成评测与训练数据，也可用于改进设计智能体的工作流程。</p>
+      </div>
+      <div class="ev">
+        <h3>种子轮融资</h3>
+        <p class="funding-amount"><strong>1,850 万美元</strong>2026 年 6 月 16 日公布</p>
+        <p><strong>共同领投</strong>　Amplify Partners、CRV</p>
+        <p><strong>其他投资机构</strong>　BoxGroup、Banter Capital、Latitud、Kyber Knight Capital 等</p>
+        <p class="funding-source"><a href="https://www.linkedin.com/posts/thais-castello-branco_were-excited-to-introduce-taste-labs-our-activity-7472678790620467200-NWoR" target="_blank" rel="noopener">创始人公告 ↗</a> · <a href="https://www.amplifypartners.com/blog-posts/kill-the-slop-announcing-our-investment-in-taste" target="_blank" rel="noopener">Amplify Partners ↗</a> · <a href="https://medium.com/crv-insights/leading-the-18-5-million-seed-in-taste-4e4d55dcdd71" target="_blank" rel="noopener">CRV ↗</a></p>
+      </div>
+    </div>
+    <div class="band thesis-belief">
+      <strong>智人合作社 · 学无止境（从研究转化成应用）</strong>
+      <ul class="thesis-list">
+        <li>研究机构不断发现值得研究的新问题，并着手解决。</li>
+        <li>应用研究加快科研成果转化，也让 AI 在与研究者的互动中学习如何定义任务、判断问题是否解决。</li>
+      </ul>
+    </div>
+  </main>
+  <footer class="foot"><span class="pg">04</span></footer>
+  <aside class="notes thesis-notes"></aside>
+</section>
+
+<section class="slide">
+  <header class="shead"><div class="sec">圆方（OSq）</div></header>
+  <main>
+    <h2>应用研究员如何使用圆方</h2>
+    <p class="main-copy">通用大模型能解决这个问题吗？</p>
+    <div class="row2 research-flow">
+      <div class="ev">
+        <h3>基准的主要用途（对于应用研究员）</h3>
+        <div class="flow-card flow-start"><strong>建立基准</strong><span>选任务、定评分标准，先测通用大模型</span></div>
+        <span class="flow-arrow" aria-hidden="true">↓</span>
+        <div class="flow-card"><strong>研究者选方案</strong><span>凭得分选通用模型或其他方法</span></div>
+        <span class="flow-arrow" aria-hidden="true">↓</span>
+        <div class="flow-card"><strong>智能体改方案</strong><span>从选定方案出发，用同一基准评估改动</span></div>
+      </div>
+      <div class="ev">
+        <h3>应用研究流程</h3>
+        <ol class="flow-stages">
+          <li class="flow-card"><strong>讨论</strong></li>
+          <li class="flow-card"><strong>设计</strong></li>
+          <li class="flow-card"><strong>开发</strong></li>
+          <li class="flow-card"><strong>应用</strong></li>
+        </ol>
+        <div class="flow-feedback">
+          <div class="flow-card"><strong>研究者委派任务、纠正偏差</strong></div>
+          <span class="flow-arrow" aria-hidden="true">↓</span>
+          <strong>AI 从反馈中学习</strong>
+          <div class="flow-lessons">
+            <div class="flow-card flow-start"><strong>任务</strong><span>选什么问题、怎么定义</span></div>
+            <div class="flow-card flow-start"><strong>判断</strong><span>什么算解决、需要什么证据</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer class="foot"><span class="pg">05</span></footer>
+  <aside class="notes"></aside>
+</section>
+
+<section class="slide">
+  <header class="shead"><div class="sec">圆方（OSq）</div></header>
+  <main>
+    <h2>个人负责问题，机构把控复利</h2>
+    <div class="loop-layout">
+      <div class="circuits">
+        <div class="circuit">
+          <h3><span class="circuit-symbol" aria-hidden="true"></span> 个人负责问题</h3>
+          <ol class="circuit-steps">
+            <li><strong>建立基准</strong><span>定义任务、指标和起点</span></li>
+            <li><strong>提升表现</strong><span>用技能、工具和模型攻克难例</span></li>
+            <li><strong>实际应用</strong><span>在真实场景检验成果</span></li>
+            <li><strong>升级基准</strong><span>把应用中发现的失败纳入下一版</span></li>
+          </ol>
+          <p class="return">↻ 以新版基准开始下一轮</p>
+        </div>
+        <div class="circuit" id="institution-circuit">
+          <h3><span class="circuit-symbol institution" aria-hidden="true"></span> 机构把控复利</h3>
+          <ol class="circuit-steps">
+            <li><strong>划定范围</strong><span>围绕研究方向组织多套基准</span></li>
+            <li><strong>模块化</strong><span>封装工具和知识，供他人分发与复用</span></li>
+            <li><strong>统一标准</strong><span>通过证伪检验，可代表机构发表</span></li>
+            <li><strong>推广复用</strong><span>把通过验证的模块用到更多基准</span></li>
+          </ol>
+          <p class="return">↻ 用复用结果调整范围、拓展基准</p>
+        </div>
+      </div>
+      <div>
+        <aside class="case-card circuit-case" aria-label="DeepSeek Super-agent 研究原型">
+          <h3>实例 · DeepSeek Super-agent</h3>
+          <p>接单、隔离执行、回传与验收可以做成可复用的流程。点击架构图，查看这些节点与机构回路的对应。</p>
+          <figure>
+            <a class="diagram-open" href="assets/deepseek-superagent-architecture.jpg" aria-haspopup="dialog" aria-controls="diagram-viewer" aria-label="放大 Super-agent 架构图">
+              <img src="assets/deepseek-superagent-architecture.jpg" width="1043" height="405" alt="DeepSeek Super-agent 完整系统架构图" />
+            </a>
+            <figcaption><a href="https://feng.ifeng.com/c/8xg8vR4CIaw" target="_blank" rel="noopener">架构图来源 · DSH Super Agent 设计文章 ↗</a></figcaption>
+          </figure>
+          <a href="https://github.com/deepseek-ai/dsh-superagent-prototype" target="_blank" rel="noopener">DSH Super Agent · 研究原型 ↗</a>
+        </aside>
+      </div>
+    </div>
+
+  </main>
+  <footer class="foot"><span class="pg">06</span></footer>
+  <aside class="notes"></aside>
+</section>
+
+<section class="slide">
+  <header class="shead"><div class="sec">首个里程碑</div></header>
+  <main>
+    <h2>在河北省科学院跑通最小可行原型</h2>
+    <div class="row2 milestone-layout">
+      <div class="ev">
+        <h3>从研究任务到试点数据目录</h3>
+        <ol class="milestone-steps">
+          <li><strong>用真实任务建立基准</strong><p>与数学所选定一项研究任务，定义评分标准并测出基线。</p></li>
+          <li><strong>用基准开发专业小模型</strong><p>研究员据此比较和改进方案，训练小模型解决实际问题。验证后的模型也可作为前沿模型后训练的教师模型。</p></li>
+          <li><strong>通过试点建立数据目录</strong><p>原型跑通后，拟把经授权的评测与仿真数据整理成目录，供前沿 AI 实验室按任务查找。</p></li>
+        </ol>
+        <p><strong>当前进展</strong>　正与数学所对齐原型，试点仍在讨论可行性。</p>
+      </div>
+      <div class="ev">
+        <h3>为何从国创中心河北中心起步</h3>
+        <p>以「京津研发、河北转化」为目标，覆盖农业、人工智能、新材料等领域，为跨领域验证提供真实项目。</p>
+        <div class="center-metrics">
+          <div><strong>59</strong>落地实施项目</div>
+          <div><strong>80+</strong>开放共享科研团队</div>
+          <div><strong>40+</strong>开放共享实验室</div>
+        </div>
+        <figure class="center-projects">
+          <a class="diagram-open" data-content="projects" data-title="国创中心立项项目清单" href="assets/hebei-innovation-center-projects.png" aria-haspopup="dialog" aria-controls="diagram-viewer" aria-label="放大国创中心立项项目清单"><img src="assets/hebei-innovation-center-projects.png" width="1260" height="709" alt="国创中心介绍第 32 页，列出先进膜材料、海洋牧场数字孪生、低空安全等立项项目" /></a>
+          <figcaption>国创中心介绍，第 24、32 页 · 点击放大项目清单</figcaption>
+        </figure>
+      </div>
+    </div>
+  </main>
+  <footer class="foot"><span class="pg">07</span></footer>
+  <aside class="notes"></aside>
+</section>
+
+<section class="slide">
+  <header class="shead"><div class="sec">希望获得的支持</div></header>
+  <main>
+    <h2>跑通首个原型，我需要什么</h2>
+    <div class="row3">
+      <div class="ev">
+        <h3>一年薪酬资助</h3>
+        <p>因家庭责任，能投入项目的业余时间有限。希望获得覆盖一年薪酬的资金，在中国和<span style="white-space: nowrap">美国（短期）</span>全职推进。</p>
+      </div>
+      <div class="ev">
+        <h3>设计伙伴与潜在买家</h3>
+        <p>希望对接有意采购我们产出的评测或训练数据的 AI 实验室。</p>
+      </div>
+      <div class="ev">
+        <h3>方向契合的机会</h3>
+        <p>也希望了解与圆方（OSq）和<span style="white-space: nowrap">传送门（Portal）</span>研究方向契合的合作或创业机会。</p>
+      </div>
+    </div>
+  </main>
+  <footer class="foot"><span class="pg">08</span></footer>
+  <aside class="notes"></aside>
+</section>
+
+<section class="slide portalbench" id="portal-demo">
+  <header class="shead"><div class="sec">附录</div></header>
+  <main>
+    <h2>从<a href="https://www.youtube.com/watch?v=-cO_DIVuSyQ" target="_blank" rel="noopener" aria-label="《传送门》原作预告">《传送门》</a>到可验证的空间任务</h2>
+    <p class="portal-intro">在《传送门》（Valve，2007）里，玩家放置一对相连的传送门，借它们穿过迷宫。</p>
+    <p class="portal-intro">PortalBench 把这个玩法变成一组空间测试。从二维地图到三维场景，再加上遮挡和干扰，测试 AI 能否根据看到的信息选对路线和传送门位置。视野受限时，也可以比较记忆是否帮助它少走回头路。</p>
+    <div class="portal-media">
+      <figure>
+        <figcaption>拟测扩展 · 有限视野与记忆</figcaption>
+        <a class="diagram-open" data-content="fog" href="assets/portal-fog-memory.png" aria-haspopup="dialog" aria-controls="diagram-viewer" aria-label="放大有限视野与记忆对照图">
+          <img src="assets/portal-fog-memory.png" alt="有限视野下，有记忆与无记忆的探索路线对照图" />
+        </a>
+      </figure>
+      <figure>
+        <figcaption>第三人称试玩</figcaption>
+        <img class="portal-print" src="assets/portal-third-person.jpg" alt="第三人称试玩画面" />
+        <video controls muted playsinline preload="metadata" poster="assets/portal-third-person.jpg" aria-label="第三人称试玩录像">
+          <source src="assets/portal-third-person.mp4" type="video/mp4" />
+          <source src="assets/portal-third-person.webm" type="video/webm" />
+        </video>
+      </figure>
+      <figure>
+        <figcaption>第一人称试玩</figcaption>
+        <img class="portal-print" src="assets/portal-first-person.jpg" alt="第一人称试玩画面" />
+        <video controls muted playsinline preload="metadata" poster="assets/portal-first-person.jpg" aria-label="第一人称试玩录像">
+          <source src="assets/portal-first-person.mp4" type="video/mp4" />
+          <source src="assets/portal-first-person.webm" type="video/webm" />
+        </video>
+      </figure>
+    </div>
+  </main>
+  <footer class="foot"><span class="pg">A1</span></footer>
+  <aside class="notes"></aside>
+</section>
+
+<section class="slide portalbench" id="portal">
+  <header class="shead"><div class="sec">附录</div></header>
+  <main>
+    <h2>PortalBench · 传送门空间表征基准</h2>
+    <p class="portal-intro">用由简入难的传送门关卡，比较具身智能体在同一任务中的感知、动作和规划。</p>
+    <div class="bench-grid">
+      <div><h3>空间定位</h3><p>能否理解空间指令，并找准要操作的目标？</p></div>
+      <div><h3>处理不连续状态</h3><p>能否预测穿门后的状态，并在规划中最优化利用传送门？</p></div>
+      <div><h3>复杂度与干扰</h3><p>迷宫固定时，遮挡与动态干扰会让表现下降多少？</p></div>
+      <div><h3>场景与指令绑定</h3><p>同一迷宫换场景或换指令后，能否迁移到正确目标？</p></div>
+    </div>
+    <div class="band">
+      <ul class="bench-list">
+        <li><strong>评测对象</strong>VLM 直控、VLM 加低层策略、世界模型智能体</li>
+        <li><strong>共用规则</strong>共用关卡、动作接口和评分规则</li>
+        <li><strong>人类基线</strong>逐关对照智能体与人类表现</li>
+      </ul>
+    </div>
+  </main>
+  <footer class="foot"><span class="pg">A2</span></footer>
+  <aside class="notes"></aside>
+</section>
+
+<section class="slide">
+  <header class="shead"><div class="sec">附录</div></header>
+  <main>
+    <h2 style="margin-top: 18px;">BEHAVIOR-Spatial｜指向影响成功率，换指令检验目标选择</h2>
+    <p class="paper-intro"><b>基于 BEHAVIOR-1K 仿真评测集</b>（在 OmniGibson 物理仿真里搭建住宅，评估家庭日常活动。），做了以下升级</p>
+    <div class="paper-rows">
+      <div class="paper-head"><span>测试</span><span>它问什么</span><span>规模</span><span>主要发现</span></div>
+      <div class="paper-row"><b>理解（Understand）</b><span>答空间题（选择题）：哪件最大？哪个离左边最近？</span><span class="scale">3,256 题 · 49 项活动</span><span>GPT-6 <b>82.1%</b>；开源最好 <b>51.8%</b>；<br>VLA 基座 π0.5 仅 <span class="tip below left" tabindex="0"><b>0.9%</b><span class="tip-box">与基准的关联：先把空间表征冻结，再接入动作模型，可能保住空间理解。π0.5 把 VLM 与动作专家一起训练，其 VLM 基座只剩 0.9%（随机 25%）；未接动作的 Qwen3.5-4B 还有 46.8%。</span></span>。</span></div>
+      <div class="paper-row"><b>指向（Ground）</b><span><span class="tip below" tabindex="0">点出目标<span class="tip-box">与基准的关联：我们的基准没有选择题；对照的是论文的生成式指向（IR）——让模型直接产出目标点。以图上标点的策略为例，生成式指向与行动软成功率的相关性更高（Spearman ρ 0.70 对 0.56）；基线则相反。可见指标是否更跟行动走取决于策略，不能假设生成式一定更好。基准应把生成式路线/传送门结果作为主评测候选，再用它与下游行动的相关性验证。</span></span>：最大的盘子在哪儿？</span><span class="scale">1,240 个点 · 14 项任务</span><span>把目标位置直接标在图上（真值点），行动软成功率：<span style="white-space: nowrap;">留出集 <b>60.3%</b></span>，<span style="white-space: nowrap;">微改指令 <b>38.0%</b></span>；换成 VLM 预测的点，<span style="white-space: nowrap;">行动软成功率（留出集）</span>掉到 <b>48.8%</b>——<span class="tip below left" tabindex="0">指向是瓶颈<span class="tip-box">与基准的关联：直接告诉模型目标在哪，成功率 60.3%；让它自己找，只有 48.8%。差的那一截，是模型自己探索、找到目标的能力。</span></span>。</span></div>
+      <div class="paper-row"><b>行动（Act）</b><span>真的去做：把最大的盘子拿过来。</span><span class="scale">14 操作 + 10 导航</span><span>基线 <b><span class="tip below left" tabindex="0">41.6% 软 / 27.9% 严<span class="tip-box">与基准的关联：把传送门选择与路线执行分开报；软成功率看选择意图，严格成功率看完成（当执行变成机器人仿真时，这个区分尤其重要）。</span></span></b>；代码智能体 <b>66.1% / 51.4%</b>，<span style="white-space: nowrap;">调代码函数比端到端策略更稳</span>。</span></div>
+      <div class="paper-row"><b><span class="tip below" tabindex="0">微改指令（Probe）<span class="tip-box">与基准的关联：固定关卡与传送门，只改目标或目标平台；测跟随目标，而非记忆路线。距离模型与目标无关，这条主要落在视觉语言模型或放置策略上。</span></span></b><span>同一布局，换目标：训练拿薯片袋，改问<span style="white-space: nowrap;">「拿最大的食品」</span>，它仍伸向薯片袋，而不是燕麦盒。</span><span class="scale">700 回合</span><span>软成功率 <b>41.6% → 16.1%</b>（严 10.0%）；<b>70%</b> 的回合<span style="white-space: nowrap;">选错目标</span>。</span></div>
+    </div>
+    <p class="paper-note">注：软成功率按目标一致行为计分（含部分进展）；70% 是选错目标回合的占比。二者不互补——严格成功率只有 10.0%，剩下的是未完成或未选择的回合。</p>
+    <a class="paper-cite" href="https://arxiv.org/abs/2610.34051" target="_blank" rel="noopener">Chen et al. · BEHAVIOR-Spatial · arXiv:2610.34051v2 · 2026 年 10 月 28 日 ↗</a>
+
+  </main>
+  <footer class="foot"><span class="pg">A3</span></footer>
+</section>
+</div>
+<div class="hint">← → 翻页 · N 讲稿 · F 全屏</div>
+
+<dialog class="diagram-viewer" id="diagram-viewer" aria-labelledby="diagram-title">
+  <div class="diagram-toolbar">
+    <strong id="diagram-title">DeepSeek Super-agent 架构图</strong>
+    <button type="button" data-zoom="-25" aria-label="缩小">−</button>
+    <button type="button" data-zoom="25" aria-label="放大">+</button>
+    <button type="button" data-zoom="0">适合窗口</button>
+    <output aria-live="polite">100%</output>
+    <button type="button" class="diagram-close" autofocus>关闭</button>
+  </div>
+  <p class="diagram-explanation">
+    把飞书或 GitHub 的请求变成<span class="diagram-term" tabindex="0" aria-describedby="diagram-owner-tip">独立任务</span><span class="diagram-tooltip" id="diagram-owner-tip" role="tooltip">同一研究方向可以组织多套基准。这里与之对应的是把同一团队的请求拆成可分别推进的独立任务。</span>，交给智能体处理，再把结果发回原处供人<span class="diagram-term" tabindex="0" aria-describedby="diagram-review-tip">验收</span><span class="diagram-tooltip" id="diagram-review-tip" role="tooltip">标准化可以落到验收节点上。把统一标准写成测试、规则或评测，先自动检查，再把结果和证据交给人确认。</span>。团队把接单、执行和验收做成可复用的<span class="diagram-term" tabindex="0" aria-describedby="diagram-workflow-tip">流程</span><span class="diagram-tooltip" id="diagram-workflow-tip" role="tooltip">模块化可以落到流程节点上。把工具和知识封装成可复用的接单、分派、执行或检查节点，再按问题需要组合起来。</span>。
+  </p>
+  <p class="fog-explanation">拟测试：保留探索记忆，能否减少重复探索和绕路？<a href="assets/portal-fog-memory.png" target="_blank" rel="noopener">点击查看原图。</a></p>
+  <div class="diagram-body">
+    <div class="diagram-scroll" tabindex="0" aria-label="图片，可滚动">
+      <div class="diagram-image">
+        <img src="assets/deepseek-superagent-architecture.jpg" width="1043" height="405" alt="DeepSeek Super-agent 完整系统架构图" />
+        <button type="button" class="diagram-hotspot trigger" aria-label="[3] 环境事件 Trigger" aria-describedby="diagram-trigger-tip">
+          <span class="diagram-node-tip" id="diagram-trigger-tip" role="tooltip"><b>组织基准的切入点。</b> 从群聊反馈、PR 评论和 CI 结果中识别独立任务。按问题类型整理这些任务，可以为不同场景组织基准。</span>
+        </button>
+        <button type="button" class="diagram-hotspot sessions" aria-label="[5] Session 数据库" aria-describedby="diagram-sessions-tip">
+          <span class="diagram-node-tip" id="diagram-sessions-tip" role="tooltip"><b>模块化与统一标准的切入点。</b> Session 数据库保留任务状态，便于找出能复用的步骤，把它们封装成节点，并在人工验收前按统一标准检查结果。</span>
+        </button>
+      </div>
+    </div>
+    <aside class="diagram-loop" aria-label="机构复利回路与架构的对应关系">
+      <p><b>组织多套基准</b> ↔ 独立任务</p>
+      <p><b>模块化</b> ↔ 把任务分派与 Worker 执行封装成可复用节点。</p>
+      <p><b>统一标准</b> ↔ 可把测试和评测接到人工验收之前，先检查，再交人确认。</p>
+    </aside>
+  </div>
+</dialog>
+
+<dialog class="diagram-viewer" id="demo-viewer" aria-labelledby="demo-title">
+  <div class="diagram-toolbar">
+    <strong id="demo-title">Trios 演示</strong>
+    <form method="dialog"><button type="submit" autofocus>关闭</button></form>
+  </div>
+  <video aria-labelledby="demo-title" controls playsinline preload="metadata"></video>
+</dialog>
+
+<script>
+(() => {
+  const stage = document.querySelector('.stage');
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  let i = 0;
+
+  const show = (n) => {
+    const next = Math.max(0, Math.min(slides.length - 1, n));
+    if (next !== i) slides[i].querySelectorAll('video').forEach(video => video.pause());
+    i = next;
+    slides.forEach((s, k) => s.classList.toggle('active', k === i));
+  };
+
+  const fit = () => {
+    const s = Math.min(window.innerWidth / 1280, window.innerHeight / 720) * 0.96;
+    stage.style.transform = `scale(${s})`;
+  };
+
+  const diagramViewer = document.querySelector('#diagram-viewer');
+  const diagramScroll = diagramViewer.querySelector('.diagram-scroll');
+  const diagramLoop = document.querySelector('#institution-circuit').cloneNode(true);
+  diagramLoop.removeAttribute('id');
+  diagramViewer.querySelector('.diagram-loop').prepend(diagramLoop);
+  const zoomOut = diagramViewer.querySelector('[data-zoom="-25"]');
+  const zoomIn = diagramViewer.querySelector('[data-zoom="25"]');
+  const zoomLabel = diagramViewer.querySelector('output');
+  let zoom = 100;
+
+  const setZoom = (value) => {
+    zoom = Math.max(50, Math.min(400, value));
+    diagramScroll.style.setProperty('--diagram-zoom', `${zoom}%`);
+    zoomLabel.textContent = `${zoom}%`;
+    zoomOut.disabled = zoom === 50;
+    zoomIn.disabled = zoom === 400;
+  };
+
+  const diagramTitle = diagramViewer.querySelector('#diagram-title');
+  const diagramImage = diagramScroll.querySelector('img');
+  const fogOriginal = diagramViewer.querySelector('.fog-explanation a');
+  document.querySelectorAll('.diagram-open').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const thumbnail = link.querySelector('img');
+      const source = thumbnail.currentSrc || thumbnail.src;
+      const content = link.dataset.content || 'architecture';
+      diagramViewer.dataset.content = content;
+      diagramTitle.textContent = link.dataset.title || (content === 'fog' ? '有限视野与记忆' : 'DeepSeek Super-agent 架构图');
+      diagramImage.src = source;
+      diagramImage.alt = thumbnail.alt;
+      diagramImage.width = thumbnail.naturalWidth;
+      diagramImage.height = thumbnail.naturalHeight;
+      if (content === 'fog') fogOriginal.href = source;
+      diagramViewer.showModal();
+      setZoom(100);
+      diagramScroll.scrollTo(0, 0);
+    });
+  });
+  zoomOut.addEventListener('click', () => setZoom(zoom - 25));
+  zoomIn.addEventListener('click', () => setZoom(zoom + 25));
+  diagramViewer.querySelector('[data-zoom="0"]').addEventListener('click', () => {
+    setZoom(100);
+    diagramScroll.scrollTo(0, 0);
+  });
+  diagramViewer.querySelector('.diagram-close').addEventListener('click', () => diagramViewer.close());
+
+  const demoViewer = document.querySelector('#demo-viewer');
+  const demoTitle = demoViewer.querySelector('#demo-title');
+  const demoVideo = demoViewer.querySelector('video');
+  document.querySelectorAll('.demo-links a').forEach(link => {
+    link.addEventListener('click', event => {
+      event.preventDefault();
+      demoTitle.textContent = `Trios · ${link.textContent}`;
+      demoVideo.src = link.href;
+      demoViewer.showModal();
+    });
+  });
+  demoViewer.addEventListener('close', () => demoVideo.pause());
+
+  window.addEventListener('resize', fit);
+  window.addEventListener('keydown', (e) => {
+    if (demoViewer.open) return;
+    if (diagramViewer.open) {
+      if (e.key === '+' || e.key === '=') setZoom(zoom + 25);
+      if (e.key === '-') setZoom(zoom - 25);
+      if (e.key === '0') setZoom(100);
+      return;
+    }
+    if (['ArrowLeft', 'ArrowRight', ' '].includes(e.key) && e.target.closest('video')) return;
+    if (e.key === ' ' && e.target.closest('button, a')) return;
+    if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); show(i + 1); }
+    if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); show(i - 1); }
+    if (e.key.toLowerCase() === 'n') document.body.classList.toggle('show-notes');
+    if (e.key.toLowerCase() === 'f') {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else document.documentElement.requestFullscreen();
+    }
+  });
+
+  fit();
+  show(0);
+})();
+</script>
+</body>
+</html>
