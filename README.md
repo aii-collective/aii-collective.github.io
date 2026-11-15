@@ -8,7 +8,6 @@ The organisation site for AI+I Collective, served by GitHub Pages from `main`.
 |---|---|
 | `index.html` | Language choice: 中文 / English |
 | `briefing/deck-web.html` | Briefing deck for Beijing Academy of AI (11 slides) |
-| `briefing/deck-web.pdf` | Same deck as PDF |
 | `briefing/en.html` | English edition placeholder |
 | `briefing/assets/` | Images and Portal recordings used by the deck |
 
